@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: dim_posts
+    description: |
+      Dimension table containing unique Instagram posts with their attributes.
+      Serves as the primary post dimension in the star schema.
+      One row per unique post_id.
+    columns:
+      - name: post_sk
+        description: Surrogate key for the post dimension
+        tests:
+          - not_null
+          - unique
+      - name: post_id
+        description: Natural key - unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: short_code
+        description: Instagram short code for the post
+        tests:
+          - not_null
+      - name: post_url
+        description: Full URL to the Instagram post
+      - name: post_type
+        description: Type of post (Image, Video, Sidecar, etc.)
+        tests:
+          - not_null
+      - name: caption
+        description: Post caption text
+      - name: location_name
+        description: Location tagged in the post
+      - name: created_date
+        description: Date when the post was created (DATE format)
+        tests:
+          - not_null
+      - name: created_at
+        description: Timestamp when the post was created
+        tests:
+          - not_null
+      - name: updated_at
+        description: Timestamp when this dimension record was last updated
+      - name: dim_loaded_at
+        description: Timestamp when this dimension was loaded
+
+  - name: dim_accounts
+    description: |
+      Dimension table containing unique Instagram accounts/owners.
+      Serves as the account dimension in the star schema.
+      One row per unique account_username.
+    columns:
+      - name: account_sk
+        description: Surrogate key for the account dimension
+        tests:
+          - not_null
+          - unique
+      - name: account_id
+        description: Sequential ID for the account
+        tests:
+          - not_null
+          - unique
+      - name: account_username
+        description: Instagram username of the account
+        tests:
+          - not_null
+          - unique
+      - name: account_name
+        description: Display name for the account
+        tests:
+          - not_null
+      - name: created_at
+        description: Timestamp when this dimension record was created
+      - name: updated_at
+        description: Timestamp when this dimension record was last updated
+      - name: dim_loaded_at
+        description: Timestamp when this dimension was loaded
+
+  - name: dim_timestamps
+    description: |
+      Dimension table containing date and time attributes for all post dates.
+      Enables time-based analysis and reporting.
+      One row per unique date from posts.
+    columns:
+      - name: timestamp_sk
+        description: Surrogate key for the timestamp dimension
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: The date (DATE format)
+        tests:
+          - not_null
+          - unique
+      - name: year
+        description: Year of the date
+        tests:
+          - not_null
+      - name: month
+        description: Month number (1-12)
+        tests:
+          - not_null
+      - name: month_name
+        description: Month name (January, February, etc.)
+      - name: day_of_month
+        description: Day of the month (1-31)
+        tests:
+          - not_null
+      - name: day_of_week
+        description: Day of week (1=Sunday, 7=Saturday)
+      - name: day_name
+        description: Day name (Monday, Tuesday, etc.)
+      - name: week_of_year
+        description: Week number in the year (1-53)
+      - name: day_of_year
+        description: Day number in the year (1-366)
+      - name: quarter
+        description: Quarter number (1-4)
+      - name: is_weekend
+        description: Boolean flag indicating if the date is a weekend
+      - name: dim_loaded_at
+        description: Timestamp when this dimension was loaded

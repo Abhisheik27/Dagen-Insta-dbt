@@ -1,0 +1,65 @@
+version: 2
+
+tests:
+  - name: test_engagement_rate_bounds
+    description: |
+      Custom test to ensure engagement_rate is between 0 and 1
+    test_type: sql
+    model: fct_instagram_engagement
+    sql: |
+      SELECT *
+      FROM {{ ref('fct_instagram_engagement') }}
+      WHERE engagement_rate < 0 OR engagement_rate > 1
+    severity: error
+
+  - name: test_total_engagement_calculation
+    description: |
+      Custom test to verify total_engagement = likes_count + comments_count
+    test_type: sql
+    model: fct_instagram_engagement
+    sql: |
+      SELECT *
+      FROM {{ ref('fct_instagram_engagement') }}
+      WHERE total_engagement != (likes_count + comments_count)
+    severity: error
+
+  - name: test_post_performance_rank_uniqueness
+    description: |
+      Custom test to ensure rank_within_account is unique per account
+    test_type: sql
+    model: int_post_performance
+    sql: |
+      SELECT owner_username, rank_within_account, COUNT(*) as cnt
+      FROM {{ ref('int_post_performance') }}
+      GROUP BY owner_username, rank_within_account
+      HAVING cnt > 1
+    severity: warn
+
+  - name: test_account_metrics_aggregation
+    description: |
+      Custom test to verify account metrics are properly aggregated
+    test_type: sql
+    model: int_account_metrics
+    sql: |
+      SELECT *
+      FROM {{ ref('int_account_metrics') }}
+      WHERE total_posts = 0 OR avg_engagement_rate < 0
+    severity: error
+
+  - name: test_trends_date_continuity
+    description: |
+      Custom test to check for date continuity in trends
+    test_type: sql
+    model: int_engagement_trends
+    sql: |
+      WITH date_gaps AS (
+        SELECT 
+          date,
+          LAG(date) OVER (ORDER BY date) as prev_date,
+          DATE_DIFF(date, LAG(date) OVER (ORDER BY date), DAY) as days_gap
+        FROM {{ ref('int_engagement_trends') }}
+      )
+      SELECT *
+      FROM date_gaps
+      WHERE days_gap > 1
+    severity: info

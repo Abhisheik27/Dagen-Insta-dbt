@@ -1,0 +1,35 @@
+{{
+  config(
+    materialized='table',
+    schema='dimensions',
+    tags=['dimensions', 'instagram'],
+    description='Dimension table for Instagram accounts/owners'
+  )
+}}
+
+WITH stg_posts AS (
+  SELECT
+    owner_username,
+    dbt_loaded_at
+  FROM {{ ref('stg_insta_posts') }}
+),
+
+unique_accounts AS (
+  SELECT DISTINCT
+    owner_username
+  FROM stg_posts
+),
+
+dim_accounts AS (
+  SELECT
+    {{ dbt_utils.generate_surrogate_key(['owner_username']) }} AS account_sk,
+    ROW_NUMBER() OVER (ORDER BY owner_username) AS account_id,
+    owner_username AS account_username,
+    owner_username AS account_name,  -- Using username as name since we don't have full name data
+    CURRENT_TIMESTAMP() AS created_at,
+    CURRENT_TIMESTAMP() AS updated_at,
+    CURRENT_TIMESTAMP() AS dim_loaded_at
+  FROM unique_accounts
+)
+
+SELECT * FROM dim_accounts

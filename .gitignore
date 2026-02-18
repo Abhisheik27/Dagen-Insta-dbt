@@ -1,0 +1,45 @@
+
+# === SECURITY: Auto-managed by Dagen - Do NOT remove ===
+# Credentials and secrets
+keyfile.json
+profiles.yml
+service-account-key.json
+*-key.json
+credentials.json
+*.pem
+*.p12
+*.pfx
+*.key
+*.keystore
+*.jks
+.env
+.env.*
+.netrc
+.pgpass
+
+# DBT build artifacts
+target/
+dbt_packages/
+dbt_modules/
+.dbt/
+logs/
+
+# IDE and system files
+.DS_Store
+.vscode/settings.json
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+
+# Spark artifacts
+metastore_db/
+spark-warehouse/
+derby.log
+# === END Dagen security block ===
+# DBT BigQuery credentials - NEVER commit these files
+
+
+# Logs and temporary files
+*.log
+.env.local
+

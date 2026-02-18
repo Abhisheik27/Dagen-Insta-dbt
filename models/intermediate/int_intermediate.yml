@@ -1,0 +1,178 @@
+version: 2
+
+models:
+  - name: int_post_performance
+    description: |
+      Intermediate model containing post-level KPIs and performance metrics.
+      Combines engagement metrics with post attributes and account averages
+      to calculate performance tiers and efficiency metrics.
+    columns:
+      - name: post_id
+        description: Unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: owner_username
+        description: Instagram username of the post owner
+        tests:
+          - not_null
+      - name: post_type
+        description: Type of post (Image, Video, Sidecar, etc.)
+      - name: likes_count
+        description: Number of likes on the post
+        tests:
+          - not_null
+      - name: comments_count
+        description: Number of comments on the post
+        tests:
+          - not_null
+      - name: video_view_count
+        description: Number of video views
+      - name: total_engagement
+        description: Sum of likes and comments
+        tests:
+          - not_null
+      - name: engagement_rate
+        description: Normalized engagement rate (0-1 range)
+        tests:
+          - not_null
+      - name: viral_score
+        description: Relative viral score compared to account average
+        tests:
+          - not_null
+      - name: reach_efficiency
+        description: Engagement per view (for videos) or per like (for images)
+      - name: performance_tier
+        description: Performance classification (Viral, High, Medium, Low)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Viral', 'High', 'Medium', 'Low']
+      - name: rank_within_account
+        description: Rank of this post by engagement within the account
+      - name: created_at
+        description: Timestamp when the post was created
+
+  - name: int_account_metrics
+    description: |
+      Intermediate model containing account-level aggregated metrics and KPIs.
+      Aggregates engagement data at the account level to provide performance
+      summaries, trends, and behavioral insights.
+    columns:
+      - name: account_sk
+        description: Foreign key to dim_accounts
+        tests:
+          - not_null
+      - name: owner_username
+        description: Instagram username of the account
+        tests:
+          - not_null
+          - unique
+      - name: total_posts
+        description: Total number of posts from this account
+        tests:
+          - not_null
+      - name: avg_likes
+        description: Average number of likes per post
+        tests:
+          - not_null
+      - name: avg_comments
+        description: Average number of comments per post
+        tests:
+          - not_null
+      - name: avg_engagement_rate
+        description: Average engagement rate across all posts
+        tests:
+          - not_null
+      - name: total_likes
+        description: Total likes across all posts
+        tests:
+          - not_null
+      - name: total_comments
+        description: Total comments across all posts
+        tests:
+          - not_null
+      - name: total_reach
+        description: Total engagement (likes + comments) across all posts
+        tests:
+          - not_null
+      - name: avg_reach_per_post
+        description: Average reach (total engagement) per post
+        tests:
+          - not_null
+      - name: post_frequency_per_week
+        description: Average number of posts per week
+        tests:
+          - not_null
+      - name: last_post_date
+        description: Date of the most recent post
+      - name: days_since_last_post
+        description: Number of days since the last post
+      - name: first_post_date
+        description: Date of the first post
+      - name: most_recent_post_date
+        description: Timestamp of the most recent post
+      - name: best_performing_post_type
+        description: Post type with highest average engagement
+      - name: performance_tier
+        description: Account performance classification (High, Medium, Low)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['High', 'Medium', 'Low']
+
+  - name: int_engagement_trends
+    description: |
+      Intermediate model for time-series engagement trends and analysis.
+      Provides daily aggregated metrics with trend indicators and comparisons
+      to enable time-based analysis and forecasting.
+    columns:
+      - name: date
+        description: The date of engagement data
+        tests:
+          - not_null
+          - unique
+      - name: day_of_week
+        description: Day of week number (1=Sunday, 7=Saturday)
+      - name: day_name
+        description: Day name (Monday, Tuesday, etc.)
+      - name: week_of_year
+        description: Week number in the year
+      - name: month
+        description: Month number (1-12)
+      - name: month_name
+        description: Month name (January, February, etc.)
+      - name: year
+        description: Year
+      - name: total_posts
+        description: Total posts on this date
+        tests:
+          - not_null
+      - name: total_likes
+        description: Total likes on this date
+        tests:
+          - not_null
+      - name: total_comments
+        description: Total comments on this date
+        tests:
+          - not_null
+      - name: total_engagement
+        description: Total engagement (likes + comments) on this date
+        tests:
+          - not_null
+      - name: avg_engagement_rate
+        description: Average engagement rate for posts on this date
+      - name: top_account
+        description: Account with highest engagement on this date
+      - name: engagement_vs_avg
+        description: Whether engagement is above, below, or at average
+        tests:
+          - accepted_values:
+              values: ['Above Average', 'Below Average', 'Average']
+      - name: trend_direction
+        description: Trend direction compared to previous day
+        tests:
+          - accepted_values:
+              values: ['Up', 'Down', 'Stable', 'New']
+      - name: growth_rate_pct
+        description: Percentage growth compared to previous day

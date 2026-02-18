@@ -1,0 +1,112 @@
+version: 2
+
+models:
+  - name: stg_insta_posts
+    description: |
+      Staging layer that parses raw JSON data from airbyte_raw_insta_united_posts.
+      Extracts key Instagram post fields, handles nulls, removes duplicates,
+      and standardizes data types for downstream models.
+    columns:
+      - name: _airbyte_raw_id
+        description: Unique identifier from Airbyte
+        tests:
+          - not_null
+          - unique
+      - name: _airbyte_extracted_at
+        description: Timestamp when data was extracted from source
+        tests:
+          - not_null
+      - name: _airbyte_loaded_at
+        description: Timestamp when data was loaded into BigQuery
+        tests:
+          - not_null
+      - name: post_id
+        description: Unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: short_code
+        description: Instagram short code for the post
+        tests:
+          - not_null
+      - name: post_url
+        description: Full URL to the Instagram post
+      - name: created_at
+        description: Timestamp when the post was created
+        tests:
+          - not_null
+      - name: post_type
+        description: Type of post (Image, Video, Sidecar, etc.)
+        tests:
+          - not_null
+      - name: owner_username
+        description: Instagram username of the post owner
+        tests:
+          - not_null
+      - name: likes_count
+        description: Number of likes on the post
+      - name: comments_count
+        description: Number of comments on the post
+      - name: video_view_count
+        description: Number of video views (null if not a video)
+      - name: caption
+        description: Post caption text
+      - name: location_name
+        description: Location tagged in the post
+      - name: dbt_loaded_at
+        description: Timestamp when this record was processed by dbt
+
+  - name: stg_insta_posts_clean
+    description: |
+      Staging layer that parses pre-cleaned JSON data from airbyte_raw_insta_united_posts_clean.
+      Uses already normalized field names and structures from Airbyte's clean connector.
+      Applies deduplication and removes null records.
+    columns:
+      - name: _airbyte_raw_id
+        description: Unique identifier from Airbyte
+        tests:
+          - not_null
+          - unique
+      - name: _airbyte_extracted_at
+        description: Timestamp when data was extracted from source
+        tests:
+          - not_null
+      - name: _airbyte_loaded_at
+        description: Timestamp when data was loaded into BigQuery
+        tests:
+          - not_null
+      - name: post_id
+        description: Unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: short_code
+        description: Instagram short code for the post
+        tests:
+          - not_null
+      - name: post_url
+        description: Full URL to the Instagram post
+      - name: created_at
+        description: Timestamp when the post was created
+        tests:
+          - not_null
+      - name: post_type
+        description: Type of post (Image, Video, Sidecar, etc.)
+        tests:
+          - not_null
+      - name: owner_username
+        description: Instagram username of the post owner
+        tests:
+          - not_null
+      - name: likes_count
+        description: Number of likes on the post
+      - name: comments_count
+        description: Number of comments on the post
+      - name: video_view_count
+        description: Number of video views (null if not a video)
+      - name: caption
+        description: Post caption text
+      - name: location_name
+        description: Location tagged in the post
+      - name: dbt_loaded_at
+        description: Timestamp when this record was processed by dbt

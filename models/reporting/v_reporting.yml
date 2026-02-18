@@ -1,0 +1,150 @@
+version: 2
+
+models:
+  - name: v_posts_kpi_report
+    description: |
+      Final reporting view for post performance KPIs.
+      Provides comprehensive post-level metrics for dashboard and BI tool consumption.
+      Includes engagement metrics, performance tiers, and ranking information.
+    columns:
+      - name: post_id
+        description: Unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: owner_username
+        description: Instagram username of the post owner
+        tests:
+          - not_null
+      - name: post_type
+        description: Type of post (Image, Video, Sidecar, etc.)
+      - name: created_date
+        description: Date when the post was created
+      - name: short_code
+        description: Instagram short code for the post
+      - name: post_url
+        description: Full URL to the Instagram post
+      - name: likes_count
+        description: Number of likes on the post
+        tests:
+          - not_null
+      - name: comments_count
+        description: Number of comments on the post
+        tests:
+          - not_null
+      - name: video_view_count
+        description: Number of video views
+      - name: total_engagement
+        description: Sum of likes and comments
+        tests:
+          - not_null
+      - name: engagement_rate
+        description: Normalized engagement rate (0-1 range)
+      - name: viral_score
+        description: Relative viral score compared to account average
+      - name: reach_efficiency
+        description: Engagement efficiency metric
+      - name: performance_tier
+        description: Performance classification (Viral, High, Medium, Low)
+      - name: rank_within_account
+        description: Rank of this post within the account
+      - name: is_top_post
+        description: Boolean flag for top 10% posts within account
+      - name: overall_engagement_rank
+        description: Global rank by engagement across all posts
+      - name: created_at
+        description: Timestamp when the post was created
+
+  - name: v_accounts_kpi_report
+    description: |
+      Final reporting view for account performance KPIs.
+      Provides comprehensive account-level metrics for dashboard and BI tool consumption.
+      Includes engagement metrics, performance tiers, trends, and growth rates.
+    columns:
+      - name: owner_username
+        description: Instagram username of the account
+        tests:
+          - not_null
+          - unique
+      - name: total_posts
+        description: Total number of posts from this account
+        tests:
+          - not_null
+      - name: avg_likes
+        description: Average number of likes per post
+      - name: avg_comments
+        description: Average number of comments per post
+      - name: avg_engagement_rate
+        description: Average engagement rate across all posts
+      - name: total_likes
+        description: Total likes across all posts
+      - name: total_comments
+        description: Total comments across all posts
+      - name: total_reach
+        description: Total engagement across all posts
+      - name: avg_reach_per_post
+        description: Average reach per post
+      - name: post_frequency_per_week
+        description: Average posts per week
+      - name: last_post_date
+        description: Date of the most recent post
+      - name: days_since_last_post
+        description: Days since the last post
+      - name: best_performing_post_type
+        description: Post type with highest average engagement
+      - name: performance_tier
+        description: Account performance tier (High, Medium, Low)
+      - name: engagement_trend
+        description: Trend direction (Growing, Declining, Stable)
+      - name: growth_rate_pct
+        description: Growth rate percentage
+      - name: account_rank
+        description: Overall account rank by engagement
+
+  - name: v_engagement_trends
+    description: |
+      Final reporting view for engagement trends and time-series analysis.
+      Provides daily aggregated metrics with trend indicators, moving averages,
+      and volatility measures for forecasting and trend analysis.
+    columns:
+      - name: date
+        description: The date of engagement data
+        tests:
+          - not_null
+          - unique
+      - name: day_of_week
+        description: Day of week number (1=Sunday, 7=Saturday)
+      - name: day_name
+        description: Day name (Monday, Tuesday, etc.)
+      - name: week_of_year
+        description: Week number in the year
+      - name: month
+        description: Month number (1-12)
+      - name: month_name
+        description: Month name (January, February, etc.)
+      - name: year
+        description: Year
+      - name: total_posts
+        description: Total posts on this date
+      - name: total_likes
+        description: Total likes on this date
+      - name: total_comments
+        description: Total comments on this date
+      - name: total_engagement
+        description: Total engagement on this date
+      - name: avg_engagement_rate
+        description: Average engagement rate for posts on this date
+      - name: top_account
+        description: Account with highest engagement on this date
+      - name: engagement_vs_avg
+        description: Whether engagement is above, below, or at average
+      - name: trend_direction
+        description: Trend direction compared to previous day
+      - name: growth_rate_pct
+        description: Percentage growth compared to previous day
+      - name: engagement_7day_ma
+        description: 7-day moving average of engagement
+      - name: engagement_30day_ma
+        description: 30-day moving average of engagement
+      - name: engagement_volatility_7day
+        description: Standard deviation of engagement over 7 days

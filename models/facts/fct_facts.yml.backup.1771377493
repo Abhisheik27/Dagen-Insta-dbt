@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: fct_instagram_engagement
+    description: |
+      Central fact table for Instagram engagement metrics.
+      Contains one row per post with engagement measures and calculated KPIs.
+      Joins staging data with dimension tables (posts, accounts, timestamps).
+      Granularity: One row per unique post.
+    columns:
+      - name: post_sk
+        description: Foreign key to dim_posts
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_posts')
+              field: post_sk
+      - name: account_sk
+        description: Foreign key to dim_accounts
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_sk
+      - name: timestamp_sk
+        description: Foreign key to dim_timestamps
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_timestamps')
+              field: timestamp_sk
+      - name: post_id
+        description: Unique Instagram post ID
+        tests:
+          - not_null
+          - unique
+      - name: owner_username
+        description: Instagram username of the post owner
+        tests:
+          - not_null
+      - name: likes_count
+        description: Number of likes on the post
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: int64
+      - name: comments_count
+        description: Number of comments on the post
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: int64
+      - name: video_view_count
+        description: Number of video views (0 if not a video)
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: int64
+      - name: created_at
+        description: Timestamp when the post was created
+        tests:
+          - not_null
+      - name: total_engagement
+        description: Sum of likes and comments
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: int64
+      - name: engagement_rate
+        description: |
+          Calculated engagement rate as (likes + comments) / (likes + comments + 1).
+          Normalized to 0-1 range.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: viral_score
+        description: |
+          Relative viral score compared to account average engagement.
+          Score of 100 = average for account, >100 = above average, <100 = below average.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: float64
+      - name: fact_loaded_at
+        description: Timestamp when this fact record was loaded
