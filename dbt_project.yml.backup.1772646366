@@ -26,8 +26,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 # Configuring models
 models:
   Dagen_Insta_dbt:
-    # All models will use the dataset specified in profiles.yml
-    # No sub-schemas to avoid permission issues
+    # All models use the same dataset
+    +schema: sample_abhisheik_jadhav_20260205205531
+    # Config indicated by + and applies to all files under models/
     staging:
       +materialized: view
       +tags: ['staging']
@@ -43,6 +44,7 @@ models:
     reporting:
       +materialized: view
       +tags: ['reporting']
-    bridges:
-      +materialized: table
-      +tags: ['bridges']
+
+# Test configurations
+tests:
+  +schema: sample_abhisheik_jadhav_20260205205531

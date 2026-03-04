@@ -2,9 +2,8 @@
     materialized='incremental',
     schema='dimensions',
     unique_id='account_id',
-    description='3NF Dimension table for Instagram accounts with surrogate keys',
-    on_schema_change='fail',
-    alias='dim_accounts_3nf'
+    description='Dimension table for Instagram accounts with surrogate keys',
+    on_schema_change='fail'
 ) }}
 
 WITH source_data AS (

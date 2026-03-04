@@ -1,0 +1,45 @@
+version: 2
+
+sources:
+  - name: airbyte_raw
+    description: Raw data from Airbyte ingestion pipelines
+    database: prd-dagen
+    schema: sample_abhisheik_jadhav_20260130060557
+    tables:
+      - name: airbyte_raw_insta_united_posts
+        description: Raw Instagram posts data from Airbyte (unstructured JSON)
+        columns:
+          - name: _airbyte_raw_id
+            description: Unique identifier for the raw record
+            tests:
+              - not_null
+              - unique
+          - name: _airbyte_extracted_at
+            description: Timestamp when data was extracted
+            tests:
+              - not_null
+          - name: _airbyte_loaded_at
+            description: Timestamp when data was loaded into BigQuery
+            tests:
+              - not_null
+          - name: _airbyte_data
+            description: JSON blob containing all post data fields
+
+      - name: airbyte_raw_insta_united_posts_clean
+        description: Pre-cleaned Instagram posts data from Airbyte
+        columns:
+          - name: _airbyte_raw_id
+            description: Unique identifier for the raw record
+            tests:
+              - not_null
+              - unique
+          - name: _airbyte_extracted_at
+            description: Timestamp when data was extracted
+            tests:
+              - not_null
+          - name: _airbyte_loaded_at
+            description: Timestamp when data was loaded into BigQuery
+            tests:
+              - not_null
+          - name: _airbyte_data
+            description: JSON blob containing cleaned post data fields

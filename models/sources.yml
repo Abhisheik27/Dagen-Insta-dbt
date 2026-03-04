@@ -1,6 +1,51 @@
 version: 2
 
 sources:
+  - name: airbyte_instagram
+    description: "Raw Instagram data from Airbyte ingestion"
+    database: prd-dagen
+    schema: sample_abhisheik_jadhav_20260205205531
+    tables:
+      - name: airbyte_raw_insta_united_posts
+        description: "Raw Instagram posts from insta_united_posts source (210 rows)"
+        columns:
+          - name: _airbyte_raw_id
+            description: "Airbyte unique identifier"
+            data_type: STRING
+          - name: _airbyte_extracted_at
+            description: "Timestamp when data was extracted"
+            data_type: TIMESTAMP
+          - name: _airbyte_loaded_at
+            description: "Timestamp when data was loaded"
+            data_type: TIMESTAMP
+          - name: _airbyte_data
+            description: "Raw JSON data containing post information"
+            data_type: STRING
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 48, period: hour}
+        loaded_at_field: _airbyte_loaded_at
+
+      - name: airbyte_raw_instagram_posts
+        description: "Curated Instagram posts with enhanced metadata (10 rows)"
+        columns:
+          - name: _airbyte_raw_id
+            description: "Airbyte unique identifier"
+            data_type: STRING
+          - name: _airbyte_extracted_at
+            description: "Timestamp when data was extracted"
+            data_type: TIMESTAMP
+          - name: _airbyte_loaded_at
+            description: "Timestamp when data was loaded"
+            data_type: TIMESTAMP
+          - name: _airbyte_data
+            description: "Raw JSON data containing enhanced post information with hashtags, mentions, and view counts"
+            data_type: STRING
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 48, period: hour}
+        loaded_at_field: _airbyte_loaded_at
+
   - name: airbyte_raw
     description: Raw data from Airbyte ingestion pipelines
     database: prd-dagen
