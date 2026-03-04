@@ -1,7 +1,7 @@
 {{
   config(
     materialized='table',
-    
+    schema='facts',
     tags=['facts', 'instagram'],
     description='Fact table for Instagram engagement metrics - central fact table for star schema'
   )

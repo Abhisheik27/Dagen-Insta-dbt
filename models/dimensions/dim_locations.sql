@@ -1,42 +1,40 @@
 {{ config(
     materialized='incremental',
     schema='dimensions',
-    unique_id='account_id',
-    description='Dimension table for Instagram accounts with surrogate keys',
+    unique_id='location_id',
+    description='Dimension table for Instagram locations with surrogate keys',
     on_schema_change='fail'
 ) }}
 
 WITH source_data AS (
     SELECT DISTINCT
-        username,
+        location_name,
         MIN(posted_at) AS first_seen_at,
-        MAX(updated_at) AS last_updated_at,
         CURRENT_TIMESTAMP() AS dbt_loaded_at
     FROM {{ ref('stg_posts') }}
-    WHERE username IS NOT NULL
-    GROUP BY username
+    WHERE location_name IS NOT NULL
+        AND TRIM(location_name) != ''
+    GROUP BY location_name
 ),
 
 with_surrogate_key AS (
     SELECT
-        FARM_FINGERPRINT(username) AS account_id,
-        username,
+        FARM_FINGERPRINT(location_name) AS location_id,
+        location_name,
         first_seen_at,
-        last_updated_at,
         dbt_loaded_at
     FROM source_data
 )
 
 {% if execute %}
     {% if run_started_at is not none %}
-        -- Incremental logic: only insert new or updated accounts
+        -- Incremental logic: only insert new locations
         SELECT *
         FROM with_surrogate_key
         {% if is_incremental() %}
-            WHERE username NOT IN (
-                SELECT username FROM {{ this }}
+            WHERE location_name NOT IN (
+                SELECT location_name FROM {{ this }}
             )
-            OR last_updated_at > (SELECT MAX(last_updated_at) FROM {{ this }})
         {% endif %}
     {% else %}
         SELECT * FROM with_surrogate_key

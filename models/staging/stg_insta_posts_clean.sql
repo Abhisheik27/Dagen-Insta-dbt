@@ -1,7 +1,7 @@
 {{
   config(
     materialized='view',
-    schema='staging',
+    
     tags=['staging', 'instagram'],
     description='Staging layer for pre-cleaned Instagram posts from Airbyte'
   )

@@ -1,7 +1,7 @@
 {{
   config(
     materialized='view',
-    
+    schema='reporting',
     tags=['reporting', 'kpi', 'instagram'],
     description='Reporting view for engagement trends and time-series analysis'
   )

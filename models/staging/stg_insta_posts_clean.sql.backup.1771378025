@@ -1,19 +1,19 @@
 {{
   config(
     materialized='view',
-    
+    schema='staging',
     tags=['staging', 'instagram'],
-    description='Staging layer for raw Instagram posts - parses JSON and extracts key fields'
+    description='Staging layer for pre-cleaned Instagram posts from Airbyte'
   )
 }}
 
-WITH raw_posts AS (
+WITH raw_clean_posts AS (
   SELECT
     _airbyte_raw_id,
     _airbyte_extracted_at,
     _airbyte_loaded_at,
     _airbyte_data
-  FROM {{ source('airbyte_raw', 'airbyte_raw_insta_united_posts') }}
+  FROM {{ source('airbyte_raw', 'airbyte_raw_insta_united_posts_clean') }}
 ),
 
 parsed_data AS (
@@ -21,19 +21,19 @@ parsed_data AS (
     _airbyte_raw_id,
     _airbyte_extracted_at,
     _airbyte_loaded_at,
-    -- Parse JSON fields
-    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.id') AS INT64) AS post_id,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.shortCode') AS short_code,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.url') AS post_url,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.timestamp') AS timestamp_str,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.type') AS post_type,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.ownerUsername') AS owner_username,
-    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.likesCount') AS INT64) AS likes_count,
-    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.commentsCount') AS INT64) AS comments_count,
-    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.videoViewCount') AS INT64) AS video_view_count,
+    -- Parse JSON fields from clean data
+    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.post_id') AS INT64) AS post_id,
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.shortcode') AS short_code,
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.post_url') AS post_url,
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.posted_at') AS timestamp_str,
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.post_type') AS post_type,
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.owner_username') AS owner_username,
+    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.likes_count') AS INT64) AS likes_count,
+    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.comments_count') AS INT64) AS comments_count,
+    CAST(JSON_EXTRACT_SCALAR(_airbyte_data, '$.video_view_count') AS INT64) AS video_view_count,
     JSON_EXTRACT_SCALAR(_airbyte_data, '$.caption') AS caption,
-    JSON_EXTRACT_SCALAR(_airbyte_data, '$.locationName') AS location_name
-  FROM raw_posts
+    JSON_EXTRACT_SCALAR(_airbyte_data, '$.location_name') AS location_name
+  FROM raw_clean_posts
 ),
 
 cleaned AS (

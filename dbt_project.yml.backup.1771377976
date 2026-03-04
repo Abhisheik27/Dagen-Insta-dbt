@@ -26,25 +26,28 @@ clean-targets:         # directories to be removed by `dbt clean`
 # Configuring models
 models:
   Dagen_Insta_dbt:
-    # All models use the same dataset
-    +schema: sample_abhisheik_jadhav_20260130060557
-    # Config indicated by + and applies to all files under models/
+    # Config indicated by + and applies to all files under models/example/
     staging:
       +materialized: view
-      +tags: ['staging']
+      +schema: staging
     dimensions:
       +materialized: table
-      +tags: ['dimensions']
+      +schema: dimensions
     facts:
       +materialized: table
-      +tags: ['facts']
+      +schema: facts
     intermediate:
       +materialized: view
-      +tags: ['intermediate']
+      +schema: intermediate
     reporting:
       +materialized: view
-      +tags: ['reporting']
+      +schema: reporting
+
+# Seed configurations
+seeds:
+  Dagen_Insta_dbt:
+    +schema: seeds
 
 # Test configurations
 tests:
-  +schema: sample_abhisheik_jadhav_20260130060557
+  +schema: tests

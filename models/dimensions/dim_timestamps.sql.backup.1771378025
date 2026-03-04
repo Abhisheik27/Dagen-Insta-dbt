@@ -1,7 +1,7 @@
 {{
   config(
     materialized='table',
-    
+    schema='dimensions',
     tags=['dimensions', 'instagram'],
     description='Dimension table for timestamps with date and time attributes'
   )
