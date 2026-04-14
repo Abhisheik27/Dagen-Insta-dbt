@@ -1,0 +1,236 @@
+version: 2
+
+models:
+  # ========== STAGING LAYER ==========
+  - name: stg_posts
+    description: "Cleaned and deduplicated Instagram posts from raw sources. Combines data from airbyte_raw_insta_united_posts and airbyte_raw_instagram_posts, with JSON parsing and deduplication by post_id."
+    columns:
+      - name: post_id
+        description: "Unique identifier for the Instagram post (primary key)"
+        data_type: INT64
+        tests:
+          - unique
+          - not_null
+      - name: username
+        description: "Instagram username of the post owner"
+        data_type: STRING
+        tests:
+          - not_null
+      - name: short_code
+        description: "Instagram short code for the post (from source1)"
+        data_type: STRING
+      - name: post_type
+        description: "Type of post (Image, Video, Sidecar, etc.)"
+        data_type: STRING
+        tests:
+          - not_null
+      - name: caption
+        description: "Post caption text content"
+        data_type: STRING
+      - name: post_url
+        description: "Direct URL to the Instagram post"
+        data_type: STRING
+      - name: image_url
+        description: "URL to the post's image (if applicable)"
+        data_type: STRING
+      - name: video_url
+        description: "URL to the post's video (if applicable)"
+        data_type: STRING
+      - name: likes_count
+        description: "Number of likes on the post"
+        data_type: INT64
+      - name: comments_count
+        description: "Number of comments on the post"
+        data_type: INT64
+      - name: view_count
+        description: "Number of views on the post (for videos)"
+        data_type: INT64
+      - name: shares_count
+        description: "Number of shares on the post"
+        data_type: INT64
+      - name: location_name
+        description: "Geographic location tagged in the post"
+        data_type: STRING
+      - name: posted_at
+        description: "Timestamp when the post was published"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+      - name: created_at
+        description: "Timestamp when the record was created"
+        data_type: TIMESTAMP
+      - name: updated_at
+        description: "Timestamp when the record was last updated"
+        data_type: TIMESTAMP
+      - name: _airbyte_extracted_at
+        description: "Airbyte extraction timestamp"
+        data_type: TIMESTAMP
+      - name: _airbyte_loaded_at
+        description: "Airbyte load timestamp"
+        data_type: TIMESTAMP
+      - name: source_system
+        description: "Source system indicator (1=airbyte_raw_insta_united_posts, 2=airbyte_raw_instagram_posts)"
+        data_type: STRING
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  # ========== DIMENSION TABLES - 3NF NORMALIZED ==========
+  - name: dim_accounts_3nf
+    description: "3NF Dimension table for Instagram accounts. Contains unique accounts with surrogate keys. Uses incremental loading strategy."
+    columns:
+      - name: account_sk
+        description: "Surrogate key for the account (FARM_FINGERPRINT of username)"
+        data_type: INT64
+        tests:
+          - unique
+          - not_null
+      - name: account_username
+        description: "Instagram username (natural key)"
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: first_seen_at
+        description: "Timestamp of the first post by this account"
+        data_type: TIMESTAMP
+      - name: last_updated_at
+        description: "Timestamp of the most recent post by this account"
+        data_type: TIMESTAMP
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  - name: dim_locations
+    description: "3NF Dimension table for Instagram locations. Contains unique locations tagged in posts with surrogate keys. Uses incremental loading."
+    columns:
+      - name: location_id
+        description: "Surrogate key for the location (hash of location_name)"
+        data_type: INT64
+        tests:
+          - unique
+          - not_null
+      - name: location_name
+        description: "Name of the location (natural key)"
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: first_seen_at
+        description: "Timestamp of the first post tagged with this location"
+        data_type: TIMESTAMP
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  - name: dim_hashtags
+    description: "3NF Dimension table for Instagram hashtags. Extracted from JSON arrays in posts. Contains unique hashtags with surrogate keys. Uses incremental loading."
+    columns:
+      - name: hashtag_id
+        description: "Surrogate key for the hashtag (hash of hashtag_name)"
+        data_type: INT64
+        tests:
+          - unique
+          - not_null
+      - name: hashtag_name
+        description: "Hashtag text (natural key)"
+        data_type: STRING
+        tests:
+          - unique
+          - not_null
+      - name: first_seen_at
+        description: "Timestamp of the first post with this hashtag"
+        data_type: TIMESTAMP
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  # ========== FACT TABLE ==========
+  - name: fct_post_metrics
+    description: "3NF Fact table for Instagram post engagement metrics. Contains likes, comments, views, and shares. Uses incremental loading with natural timestamp-based updates."
+    columns:
+      - name: metric_id
+        description: "Surrogate key for the metric record"
+        data_type: INT64
+        tests:
+          - unique
+          - not_null
+      - name: post_id
+        description: "Foreign key to stg_posts"
+        data_type: INT64
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_posts')
+              field: post_id
+      - name: username
+        description: "Instagram username of the post owner (denormalized for reporting)"
+        data_type: STRING
+      - name: likes_count
+        description: "Number of likes on the post"
+        data_type: INT64
+      - name: comments_count
+        description: "Number of comments on the post"
+        data_type: INT64
+      - name: view_count
+        description: "Number of views on the post"
+        data_type: INT64
+      - name: shares_count
+        description: "Number of shares on the post"
+        data_type: INT64
+      - name: posted_at
+        description: "Timestamp when the post was published"
+        data_type: TIMESTAMP
+      - name: measured_at
+        description: "Timestamp when metrics were measured (updated_at)"
+        data_type: TIMESTAMP
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  # ========== BRIDGE TABLES ==========
+  - name: bridge_post_hashtags
+    description: "3NF Bridge table for many-to-many relationship between posts and hashtags. Enables analysis of which hashtags appear in which posts. Uses incremental loading."
+    columns:
+      - name: post_id
+        description: "Foreign key to stg_posts"
+        data_type: INT64
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_posts')
+              field: post_id
+      - name: hashtag_id
+        description: "Foreign key to dim_hashtags"
+        data_type: INT64
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hashtags')
+              field: hashtag_id
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
+
+  - name: bridge_post_mentions
+    description: "3NF Bridge table for many-to-many relationship between posts and mentioned accounts. Enables analysis of which accounts are mentioned in which posts. Uses incremental loading."
+    columns:
+      - name: post_id
+        description: "Foreign key to stg_posts"
+        data_type: INT64
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_posts')
+              field: post_id
+      - name: mentioned_account_sk
+        description: "Foreign key to dim_accounts_3nf (surrogate key of mentioned account)"
+        data_type: INT64
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts_3nf')
+              field: account_sk
+      - name: dbt_loaded_at
+        description: "Timestamp when dbt loaded this record"
+        data_type: TIMESTAMP
