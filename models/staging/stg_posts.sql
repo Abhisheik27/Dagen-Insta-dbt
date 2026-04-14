@@ -1,0 +1,2 @@
+-- DEPRECATED: This model is no longer used.
+-- Use stg_insta_posts or stg_insta_posts_clean instead.
