@@ -17,7 +17,7 @@ WITH stg_posts AS (
     caption,
     location_name,
     dbt_loaded_at
-  FROM {{ ref('stg_posts') }}
+  FROM {{ ref('stg_insta_posts') }}
 ),
 
 dim_posts AS (

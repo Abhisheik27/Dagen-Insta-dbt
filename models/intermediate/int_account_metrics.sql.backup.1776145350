@@ -11,7 +11,7 @@ WITH fct_engagement AS (
   SELECT
     account_sk,
     post_id,
-    username,
+    owner_username,
     likes_count,
     comments_count,
     video_view_count,
@@ -31,7 +31,7 @@ dim_posts AS (
 account_aggregates AS (
   SELECT
     fe.account_sk,
-    fe.username,
+    fe.owner_username,
     COUNT(DISTINCT fe.post_id) AS total_posts,
     ROUND(AVG(fe.likes_count), 2) AS avg_likes,
     ROUND(AVG(fe.comments_count), 2) AS avg_comments,
@@ -54,13 +54,13 @@ account_aggregates AS (
     MIN(fe.created_at) AS first_post_date,
     MAX(fe.created_at) AS most_recent_post_date
   FROM fct_engagement fe
-  GROUP BY fe.account_sk, fe.username
+  GROUP BY fe.account_sk, fe.owner_username
 ),
 
 best_post_type AS (
   SELECT
     fe.account_sk,
-    fe.username,
+    fe.owner_username,
     dp.post_type,
     ROW_NUMBER() OVER (
       PARTITION BY fe.account_sk 
@@ -68,13 +68,13 @@ best_post_type AS (
     ) AS post_type_rank
   FROM fct_engagement fe
   LEFT JOIN dim_posts dp ON fe.post_sk = dp.post_sk
-  GROUP BY fe.account_sk, fe.username, dp.post_type
+  GROUP BY fe.account_sk, fe.owner_username, dp.post_type
 ),
 
 account_metrics AS (
   SELECT
     aa.account_sk,
-    aa.username,
+    aa.owner_username,
     aa.total_posts,
     aa.avg_likes,
     aa.avg_comments,

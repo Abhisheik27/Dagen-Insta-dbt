@@ -79,13 +79,13 @@ models:
   - name: dim_accounts_3nf
     description: "3NF Dimension table for Instagram accounts. Contains unique accounts with surrogate keys. Uses incremental loading strategy."
     columns:
-      - name: account_id
-        description: "Surrogate key for the account (hash of username)"
+      - name: account_sk
+        description: "Surrogate key for the account (FARM_FINGERPRINT of username)"
         data_type: INT64
         tests:
           - unique
           - not_null
-      - name: username
+      - name: account_username
         description: "Instagram username (natural key)"
         data_type: STRING
         tests:
@@ -223,14 +223,14 @@ models:
           - relationships:
               to: ref('stg_posts')
               field: post_id
-      - name: mentioned_account_id
-        description: "Foreign key to dim_accounts (surrogate key of mentioned account)"
+      - name: mentioned_account_sk
+        description: "Foreign key to dim_accounts_3nf (surrogate key of mentioned account)"
         data_type: INT64
         tests:
           - not_null
           - relationships:
-              to: ref('dim_accounts')
-              field: account_id
+              to: ref('dim_accounts_3nf')
+              field: account_sk
       - name: dbt_loaded_at
         description: "Timestamp when dbt loaded this record"
         data_type: TIMESTAMP

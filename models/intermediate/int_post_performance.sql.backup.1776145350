@@ -12,7 +12,7 @@ WITH fct_engagement AS (
     post_sk,
     account_sk,
     post_id,
-    username,
+    owner_username,
     likes_count,
     comments_count,
     video_view_count,
@@ -46,7 +46,7 @@ account_averages AS (
 post_performance AS (
   SELECT
     fe.post_id,
-    fe.username,
+    fe.owner_username,
     dp.post_type,
     fe.likes_count,
     fe.comments_count,
@@ -69,7 +69,7 @@ post_performance AS (
     END AS performance_tier,
     -- Rank within account
     ROW_NUMBER() OVER (
-      PARTITION BY fe.username 
+      PARTITION BY fe.owner_username 
       ORDER BY fe.total_engagement DESC
     ) AS rank_within_account,
     fe.created_at

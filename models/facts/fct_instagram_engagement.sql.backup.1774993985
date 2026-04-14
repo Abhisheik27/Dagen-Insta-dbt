@@ -49,11 +49,11 @@ joined_data AS (
     stg.likes_count,
     stg.comments_count,
     stg.view_count,
-    stg.posted_at
+    stg.created_at
   FROM stg_posts stg
   LEFT JOIN dim_posts dp ON stg.post_id = dp.post_id
   LEFT JOIN dim_accounts da ON stg.username = da.account_username
-  LEFT JOIN dim_timestamps dt ON CAST(stg.posted_at AS DATE) = dt.date
+  LEFT JOIN dim_timestamps dt ON CAST(stg.created_at AS DATE) = dt.date
 ),
 
 engagement_metrics AS (
@@ -66,7 +66,7 @@ engagement_metrics AS (
     likes_count,
     comments_count,
     view_count,
-    posted_at,
+    created_at,
     -- Calculated metrics
     (likes_count + comments_count) AS total_engagement,
     CASE 

@@ -10,7 +10,7 @@
 WITH stg_posts AS (
   SELECT DISTINCT
     CAST(created_at AS DATE) AS date_value
-  FROM {{ ref('stg_posts') }}
+  FROM {{ ref('stg_insta_posts') }}
   WHERE created_at IS NOT NULL
 ),
 

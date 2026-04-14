@@ -48,8 +48,8 @@ daily_engagement AS (
     ROUND(AVG(fe.engagement_rate), 4) AS avg_engagement_rate,
     -- Top account for the day
     ARRAY_AGG(
-      STRUCT(fe.username, SUM(fe.total_engagement) AS engagement)
-      IGNORE NULLS
+      STRUCT(fe.username, SUM(fe.total_engagement) AS engagement),
+      IGNORE NULLS => TRUE
       ORDER BY SUM(fe.total_engagement) DESC
       LIMIT 1
     )[OFFSET(0)].username AS top_account

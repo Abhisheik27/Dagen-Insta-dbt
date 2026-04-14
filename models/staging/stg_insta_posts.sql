@@ -13,7 +13,7 @@ WITH raw_posts AS (
     _airbyte_extracted_at,
     _airbyte_loaded_at,
     _airbyte_data
-  FROM {{ source('airbyte_raw', 'airbyte_raw_insta_united_posts') }}
+  FROM {{ source('airbyte_instagram', 'airbyte_raw_insta_united_posts') }}
 ),
 
 parsed_data AS (

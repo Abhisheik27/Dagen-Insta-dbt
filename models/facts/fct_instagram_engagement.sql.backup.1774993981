@@ -10,11 +10,11 @@
 WITH stg_posts AS (
   SELECT
     post_id,
-    username,
-    posted_at,
+    owner_username,
+    created_at,
     likes_count,
     comments_count,
-    view_count
+    video_view_count
   FROM {{ ref('stg_posts') }}
 ),
 
@@ -45,15 +45,15 @@ joined_data AS (
     da.account_sk,
     dt.timestamp_sk,
     stg.post_id,
-    stg.username,
+    stg.owner_username,
     stg.likes_count,
     stg.comments_count,
-    stg.view_count,
-    stg.posted_at
+    stg.video_view_count,
+    stg.created_at
   FROM stg_posts stg
   LEFT JOIN dim_posts dp ON stg.post_id = dp.post_id
-  LEFT JOIN dim_accounts da ON stg.username = da.account_username
-  LEFT JOIN dim_timestamps dt ON CAST(stg.posted_at AS DATE) = dt.date
+  LEFT JOIN dim_accounts da ON stg.owner_username = da.account_username
+  LEFT JOIN dim_timestamps dt ON CAST(stg.created_at AS DATE) = dt.date
 ),
 
 engagement_metrics AS (
@@ -62,11 +62,11 @@ engagement_metrics AS (
     account_sk,
     timestamp_sk,
     post_id,
-    username,
+    owner_username,
     likes_count,
     comments_count,
-    view_count,
-    posted_at,
+    video_view_count,
+    created_at,
     -- Calculated metrics
     (likes_count + comments_count) AS total_engagement,
     CASE 
@@ -80,7 +80,7 @@ engagement_metrics AS (
     -- Viral score (simplified - based on engagement relative to account average)
     ROUND(
       (likes_count + comments_count) * 100.0 / NULLIF(
-        AVG(likes_count + comments_count) OVER (PARTITION BY username), 
+        AVG(likes_count + comments_count) OVER (PARTITION BY owner_username), 
         0
       ),
       2

@@ -13,14 +13,19 @@ WITH source1_parsed AS (
         JSON_EXTRACT_SCALAR(json_data, '$.type') AS post_type,
         JSON_EXTRACT_SCALAR(json_data, '$.caption') AS caption,
         JSON_EXTRACT_SCALAR(json_data, '$.url') AS post_url,
-        NULL AS image_url,
-        NULL AS video_url,
+        CAST(NULL AS STRING) AS image_url,
+        CAST(NULL AS STRING) AS video_url,
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.likesCount') AS INT64) AS likes_count,
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.commentsCount') AS INT64) AS comments_count,
         CAST(COALESCE(JSON_EXTRACT_SCALAR(json_data, '$.videoViewCount'), '0') AS INT64) AS view_count,
-        NULL AS shares_count,
+        CAST(NULL AS INT64) AS shares_count,
         JSON_EXTRACT_SCALAR(json_data, '$.locationName') AS location_name,
-        PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S%Ez', JSON_EXTRACT_SCALAR(json_data, '$.timestamp')) AS posted_at,
+        COALESCE(
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S%Ez', JSON_EXTRACT_SCALAR(json_data, '$.timestamp')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.timestamp')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%S%Ez', JSON_EXTRACT_SCALAR(json_data, '$.timestamp')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%S', JSON_EXTRACT_SCALAR(json_data, '$.timestamp'))
+        ) AS posted_at,
         CURRENT_TIMESTAMP() AS created_at,
         CURRENT_TIMESTAMP() AS updated_at,
         _airbyte_extracted_at,
@@ -36,13 +41,13 @@ source2_parsed AS (
     SELECT
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.post_id') AS INT64) AS post_id,
         JSON_EXTRACT_SCALAR(json_data, '$.username') AS username,
-        NULL AS short_code,
+        CAST(NULL AS STRING) AS short_code,
         CASE 
             WHEN JSON_EXTRACT_SCALAR(json_data, '$.is_video') = 'true' THEN 'Video'
             ELSE 'Image'
         END AS post_type,
         JSON_EXTRACT_SCALAR(json_data, '$.caption') AS caption,
-        NULL AS post_url,
+        CAST(NULL AS STRING) AS post_url,
         JSON_EXTRACT_SCALAR(json_data, '$.image_url') AS image_url,
         JSON_EXTRACT_SCALAR(json_data, '$.video_url') AS video_url,
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.likes_count') AS INT64) AS likes_count,
@@ -50,9 +55,18 @@ source2_parsed AS (
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.view_count') AS INT64) AS view_count,
         CAST(JSON_EXTRACT_SCALAR(json_data, '$.shares_count') AS INT64) AS shares_count,
         JSON_EXTRACT_SCALAR(json_data, '$.location') AS location_name,
-        PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.posted_at')) AS posted_at,
-        PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.created_at')) AS created_at,
-        PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.updated_at')) AS updated_at,
+        COALESCE(
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.posted_at')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%S', JSON_EXTRACT_SCALAR(json_data, '$.posted_at'))
+        ) AS posted_at,
+        COALESCE(
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.created_at')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%S', JSON_EXTRACT_SCALAR(json_data, '$.created_at'))
+        ) AS created_at,
+        COALESCE(
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', JSON_EXTRACT_SCALAR(json_data, '$.updated_at')),
+            SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%S', JSON_EXTRACT_SCALAR(json_data, '$.updated_at'))
+        ) AS updated_at,
         _airbyte_extracted_at,
         _airbyte_loaded_at,
         '2' AS source_system
@@ -102,4 +116,4 @@ SELECT
     source_system,
     CURRENT_TIMESTAMP() AS dbt_loaded_at
 FROM deduplicated
-ORDER BY posted_at DESC
+ORDER BY post_id
